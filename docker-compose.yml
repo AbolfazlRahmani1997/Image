@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+  golang-service:
+    build:
+      context: ./golang
+      dockerfile: Dockerfile
+    container_name: golang_service
+    ports:
+      - "8080:8080"
+    volumes:
+      - shared_data:/app/uploads
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=niclub
+      - DB_PASSWORD=niclub
+      - DB_NAME=image_assistant
+      - API_KEY=
+      -
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  python-service:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: python_service
+    ports:
+      - "5000:5000"
+    volumes:
+      - shared_data:/app/uploads
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - DB_HOST=postgres
+      - DB_USER=your_db_user
+      - DB_PASSWORD=your_db_password
+      - DB_NAME=your_db_name
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: niclub
+      POSTGRES_PASSWORD: niclub
+      POSTGRES_DB: image_assistant
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  shared_data:
+  postgres_data:
